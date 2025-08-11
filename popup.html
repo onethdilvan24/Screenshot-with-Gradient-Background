@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 300px;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    h2 {
+      margin: 0 0 20px 0;
+      font-size: 18px;
+      color: #333;
+    }
+    
+    .control-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: #555;
+      font-size: 12px;
+    }
+    
+    select, input[type="range"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    input[type="range"] {
+      padding: 0;
+      height: 6px;
+      background: #ddd;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #007bff;
+      cursor: pointer;
+    }
+    
+    .padding-value {
+      display: inline-block;
+      margin-left: 10px;
+      font-weight: bold;
+      color: #007bff;
+    }
+    
+    .preview {
+      width: 100%;
+      height: 60px;
+      border-radius: 4px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+    }
+    
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    
+    .capture-btn {
+      background: #007bff;
+      color: white;
+    }
+    
+    .capture-btn:hover {
+      background: #0056b3;
+    }
+    
+    .capture-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .status {
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      text-align: center;
+    }
+    
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Capture Screenshot</h2>
+    
+    <div class="control-group">
+      <label for="backgroundType">Background Type:</label>
+      <select id="backgroundType">
+        <option value="gradient">Gradient</option>
+        <option value="solid">Solid Color</option>
+        <option value="transparent">Transparent</option>
+      </select>
+    </div>
+    
+    <div class="control-group" id="gradientGroup">
+      <label for="gradientSelect">Gradient:</label>
+      <select id="gradientSelect">
+        <option value="linear-gradient(135deg, #667eea 0%, #764ba2 100%)">Blue to Purple</option>
+        <option value="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">Pink to Red</option>
+        <option value="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">Blue to Cyan</option>
+        <option value="linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)">Green to Blue</option>
+        <option value="linear-gradient(135deg, #fa709a 0%, #fee140 100%)">Pink to Yellow</option>
+        <option value="linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)">Mint to Pink</option>
+        <option value="linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)">Coral to Pink</option>
+        <option value="linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)">Purple to Pink</option>
+      </select>
+    </div>
+    
+    <div class="control-group">
+      <label for="paddingSlider">Padding: <span class="padding-value" id="paddingValue">50px</span></label>
+      <input type="range" id="paddingSlider" min="0" max="200" value="50">
+    </div>
+    
+    <div class="preview" id="preview"></div>
+    
+    <div class="buttons">
+      <button class="capture-btn" id="captureBtn">Capture Screenshot</button>
+    </div>
+    
+    <div class="status hidden" id="status"></div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

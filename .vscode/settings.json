@@ -1,0 +1,22 @@
+{
+    "files.associations": {
+        "*.json": "jsonc"
+    },
+    "html.suggest.html5": true,
+    "javascript.suggest.autoImports": true,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll": true
+    },
+    "javascript.preferences.quoteStyle": "single",
+    "typescript.preferences.quoteStyle": "single",
+    "emmet.includeLanguages": {
+        "javascript": "javascriptreact"
+    },
+    "files.exclude": {
+        "**/node_modules": true,
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true
+    }
+}
