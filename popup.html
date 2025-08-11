@@ -1,178 +1,309 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <meta charset="utf-8">
-  <style>
-    body {
-      width: 300px;
-      padding: 20px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f5f5f5;
-      margin: 0;
-    }
-    
-    .container {
-      background: white;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    h2 {
-      margin: 0 0 20px 0;
-      font-size: 18px;
-      color: #333;
-    }
-    
-    .control-group {
-      margin-bottom: 15px;
-    }
-    
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: 500;
-      color: #555;
-      font-size: 12px;
-    }
-    
-    select, input[type="range"] {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-    
-    input[type="range"] {
-      padding: 0;
-      height: 6px;
-      background: #ddd;
-      outline: none;
-      -webkit-appearance: none;
-    }
-    
-    input[type="range"]::-webkit-slider-thumb {
-      appearance: none;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: #007bff;
-      cursor: pointer;
-    }
-    
-    .padding-value {
-      display: inline-block;
-      margin-left: 10px;
-      font-weight: bold;
-      color: #007bff;
-    }
-    
-    .preview {
-      width: 100%;
-      height: 60px;
-      border-radius: 4px;
-      margin: 10px 0;
-      border: 1px solid #ddd;
-    }
-    
-    .buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 20px;
-    }
-    
-    button {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      border-radius: 4px;
-      font-weight: 500;
-      cursor: pointer;
-      font-size: 14px;
-      transition: all 0.2s;
-    }
-    
-    .capture-btn {
-      background: #007bff;
-      color: white;
-    }
-    
-    .capture-btn:hover {
-      background: #0056b3;
-    }
-    
-    .capture-btn:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-    
-    .status {
-      margin-top: 10px;
-      padding: 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      text-align: center;
-    }
-    
-    .status.success {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-    
-    .status.error {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-    
-    .hidden {
-      display: none;
-    }
-  </style>
+    <meta charset="utf-8">
+    <style>
+        body {
+            width: 320px;
+            padding: 16px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 18px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        h2 {
+            margin: 0 0 20px 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+            font-size: 12px;
+        }
+
+        select,
+        input[type="range"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        input[type="range"] {
+            padding: 0;
+            height: 6px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #007bff;
+            cursor: pointer;
+        }
+
+        .padding-value {
+            display: inline-block;
+            margin-left: 10px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .preview {
+            width: 100%;
+            height: 60px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+        }
+
+        .screenshot-preview {
+            width: 100%;
+            height: 150px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .screenshot-preview canvas {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 4px;
+        }
+
+        .preview-placeholder {
+            color: #666;
+            font-size: 12px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .preview-btn {
+            width: 100%;
+            padding: 8px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .preview-btn:hover {
+            background: #218838;
+        }
+
+        .preview-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .capture-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        .capture-btn:hover {
+            background: #0056b3;
+        }
+
+        .capture-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 6px;
+            margin-top: 8px;
+            padding: 4px;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .color-option {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            position: relative;
+            justify-self: center;
+            box-sizing: border-box;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+            border-color: #007bff;
+        }
+
+        .color-option.selected {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        .color-option[data-color="#ffffff"],
+        .color-option[data-color="#f8f9fa"],
+        .color-option[data-color="#e9ecef"] {
+            border: 2px solid #ddd;
+        }
+
+        .color-option[data-color="#ffffff"].selected,
+        .color-option[data-color="#f8f9fa"].selected,
+        .color-option[data-color="#e9ecef"].selected {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+    </style>
 </head>
+
 <body>
-  <div class="container">
-    <h2>Capture Screenshot</h2>
-    
-    <div class="control-group">
-      <label for="backgroundType">Background Type:</label>
-      <select id="backgroundType">
-        <option value="gradient">Gradient</option>
-        <option value="solid">Solid Color</option>
-        <option value="transparent">Transparent</option>
-      </select>
+    <div class="container">
+        <h2>Capture Screenshot</h2>
+
+        <div class="control-group">
+            <label for="backgroundType">Background Type:</label>
+            <select id="backgroundType">
+                <option value="gradient">Gradient</option>
+                <option value="solid">Solid Color</option>
+                <option value="transparent">Transparent</option>
+            </select>
+        </div>
+
+        <div class="control-group" id="gradientGroup">
+            <label for="gradientSelect">Gradient:</label>
+            <select id="gradientSelect">
+                <option value="linear-gradient(135deg, #667eea 0%, #764ba2 100%)">Blue to Purple</option>
+                <option value="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">Pink to Red</option>
+                <option value="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">Blue to Cyan</option>
+                <option value="linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)">Green to Blue</option>
+                <option value="linear-gradient(135deg, #fa709a 0%, #fee140 100%)">Pink to Yellow</option>
+                <option value="linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)">Mint to Pink</option>
+                <option value="linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)">Coral to Pink</option>
+                <option value="linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)">Purple to Pink</option>
+            </select>
+        </div>
+
+        <div class="control-group hidden" id="solidGroup">
+            <label>Solid Color:</label>
+            <div class="color-palette" id="colorPalette">
+                <div class="color-option" data-color="#ffffff" style="background-color: #ffffff;" title="White"></div>
+                <div class="color-option" data-color="#f8f9fa" style="background-color: #f8f9fa;" title="Light Gray">
+                </div>
+                <div class="color-option" data-color="#e9ecef" style="background-color: #e9ecef;" title="Gray"></div>
+                <div class="color-option" data-color="#6c757d" style="background-color: #6c757d;" title="Dark Gray">
+                </div>
+                <div class="color-option" data-color="#000000" style="background-color: #000000;" title="Black"></div>
+                <div class="color-option" data-color="#007bff" style="background-color: #007bff;" title="Blue"></div>
+                <div class="color-option" data-color="#28a745" style="background-color: #28a745;" title="Green"></div>
+                <div class="color-option" data-color="#dc3545" style="background-color: #dc3545;" title="Red"></div>
+                <div class="color-option" data-color="#ffc107" style="background-color: #ffc107;" title="Yellow"></div>
+                <div class="color-option" data-color="#17a2b8" style="background-color: #17a2b8;" title="Cyan"></div>
+                <div class="color-option" data-color="#6f42c1" style="background-color: #6f42c1;" title="Purple"></div>
+                <div class="color-option" data-color="#fd7e14" style="background-color: #fd7e14;" title="Orange"></div>
+                <div class="color-option" data-color="#e83e8c" style="background-color: #e83e8c;" title="Pink"></div>
+                <div class="color-option" data-color="#20c997" style="background-color: #20c997;" title="Teal"></div>
+                <div class="color-option" data-color="#6610f2" style="background-color: #6610f2;" title="Indigo"></div>
+                <div class="color-option" data-color="#343a40" style="background-color: #343a40;" title="Dark"></div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="paddingSlider">Padding: <span class="padding-value" id="paddingValue">50px</span></label>
+            <input type="range" id="paddingSlider" min="0" max="200" value="50">
+        </div>
+
+        <div class="preview" id="preview"></div>
+
+        <div class="control-group">
+            <label>Live Preview:</label>
+            <div class="screenshot-preview" id="screenshotPreview">
+                <div class="preview-placeholder">Loading preview...</div>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="capture-btn" id="captureBtn">Capture Screenshot</button>
+        </div>
+
+        <div class="status hidden" id="status"></div>
     </div>
-    
-    <div class="control-group" id="gradientGroup">
-      <label for="gradientSelect">Gradient:</label>
-      <select id="gradientSelect">
-        <option value="linear-gradient(135deg, #667eea 0%, #764ba2 100%)">Blue to Purple</option>
-        <option value="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">Pink to Red</option>
-        <option value="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">Blue to Cyan</option>
-        <option value="linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)">Green to Blue</option>
-        <option value="linear-gradient(135deg, #fa709a 0%, #fee140 100%)">Pink to Yellow</option>
-        <option value="linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)">Mint to Pink</option>
-        <option value="linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)">Coral to Pink</option>
-        <option value="linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)">Purple to Pink</option>
-      </select>
-    </div>
-    
-    <div class="control-group">
-      <label for="paddingSlider">Padding: <span class="padding-value" id="paddingValue">50px</span></label>
-      <input type="range" id="paddingSlider" min="0" max="200" value="50">
-    </div>
-    
-    <div class="preview" id="preview"></div>
-    
-    <div class="buttons">
-      <button class="capture-btn" id="captureBtn">Capture Screenshot</button>
-    </div>
-    
-    <div class="status hidden" id="status"></div>
-  </div>
-  
-  <script src="popup.js"></script>
+
+    <script src="popup.js"></script>
 </body>
+
 </html>
