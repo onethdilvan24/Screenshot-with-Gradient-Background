@@ -413,21 +413,8 @@ class ScreenshotPopup {
                 throw new Error('Chrome extension APIs not available');
             }
 
-            console.log('Chrome APIs available');
-
-            // Get current settings
-            const settings = {
-                backgroundType: this.backgroundType.value,
-                gradient: this.gradientSelect.value,
-                solidColor: this.selectedSolidColor,
-                padding: parseInt(this.paddingSlider.value)
-            };
-
-            console.log('Settings:', settings);
-
             // Get active tab
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-            console.log('Active tab:', tab);
 
             if (!tab) {
                 throw new Error('No active tab found');
@@ -437,74 +424,219 @@ class ScreenshotPopup {
                 throw new Error('Invalid tab ID');
             }
 
-            this.showStatus('Capturing screenshot...', 'success');
-
-            // Capture the visible tab
-            const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, {
-                format: 'png',
-                quality: 100
-            });
-
-            if (!dataUrl) {
-                throw new Error('Failed to capture screenshot');
+            // Check if this is a restricted page (but don't block, just log)
+            const isRestricted = this.isRestrictedUrl(tab.url);
+            if (isRestricted) {
+                console.log('Note: This appears to be a browser internal page, capture may not work');
             }
 
-            console.log('Screenshot captured, data URL length:', dataUrl.length);
-            this.showStatus('Processing screenshot...', 'success');
+            console.log('Capturing tab:', tab.url);
 
-            // Test if content script is available
+            // Get current settings
+            const settings = {
+                backgroundType: this.backgroundType.value,
+                gradient: this.gradientSelect.value,
+                solidColor: this.selectedSolidColor,
+                padding: parseInt(this.paddingSlider.value)
+            };
+
+            this.showStatus('Capturing screenshot...', 'success');
+
+            // Capture the visible tab - let Chrome handle restrictions
+            let dataUrl;
             try {
-                const testResponse = await chrome.tabs.sendMessage(tab.id, { action: 'ping' });
-                console.log('Content script ping response:', testResponse);
-            } catch (pingError) {
-                console.warn('Content script not responding to ping:', pingError);
-                // Try to inject content script manually
-                try {
-                    await chrome.scripting.executeScript({
-                        target: { tabId: tab.id },
-                        files: ['content.js']
-                    });
-                    console.log('Content script injected manually');
-                } catch (injectError) {
-                    console.error('Failed to inject content script:', injectError);
-                    throw new Error('Content script not available. Try reloading the page.');
+                dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, {
+                    format: 'png',
+                    quality: 100
+                });
+            } catch (captureError) {
+                // Handle specific capture errors
+                if (captureError.message.includes('Cannot access')) {
+                    throw new Error('Cannot capture this page. This might be a browser internal page or a page with restricted access.');
+                } else if (captureError.message.includes('active tab')) {
+                    throw new Error('Cannot capture inactive tab. Please make sure the tab is active and visible.');
+                } else {
+                    throw new Error(`Screenshot capture failed: ${captureError.message}`);
                 }
             }
 
-            // Send to content script for processing
-            const response = await chrome.tabs.sendMessage(tab.id, {
-                action: 'processScreenshot',
-                dataUrl: dataUrl,
-                settings: settings
-            });
+            if (!dataUrl) {
+                throw new Error('Screenshot capture returned empty data');
+            }
 
-            console.log('Content script response:', response);
+            console.log('Screenshot captured successfully');
+            this.showStatus('Processing screenshot...', 'success');
 
-            if (response && response.success === false) {
-                throw new Error(response.error || 'Content script processing failed');
+            // Try to process with content script first, with graceful fallback
+            let processed = false;
+
+            // Only try content script on regular web pages
+            if (!isRestricted) {
+                try {
+                    // Check if content script is available
+                    await this.ensureContentScriptLoaded(tab.id);
+
+                    // Send to content script for processing
+                    const response = await chrome.tabs.sendMessage(tab.id, {
+                        action: 'processScreenshot',
+                        dataUrl: dataUrl,
+                        settings: settings
+                    });
+
+                    if (response && response.success !== false) {
+                        processed = true;
+                        console.log('Content script processing successful');
+                    }
+                } catch (contentScriptError) {
+                    // Silently fall back - this is expected on some pages
+                    console.log('Using fallback processing (content script unavailable)');
+                }
+            }
+
+            // Fallback: process in popup if content script failed or page is restricted
+            if (!processed) {
+                await this.processScreenshotInPopup(dataUrl, settings);
             }
 
             this.showStatus('Screenshot captured and processed!', 'success');
 
         } catch (error) {
             console.error('Error capturing screenshot:', error);
-            let errorMessage = error.message;
-
-            // Provide more user-friendly error messages
-            if (errorMessage.includes('Cannot access')) {
-                errorMessage = 'Cannot capture this page. Try a regular webpage.';
-            } else if (errorMessage.includes('No active tab')) {
-                errorMessage = 'Please make sure you have an active tab open.';
-            } else if (errorMessage.includes('Could not establish connection')) {
-                errorMessage = 'Content script not loaded. Try reloading the page.';
-            } else if (errorMessage.includes('Extension context invalidated')) {
-                errorMessage = 'Extension needs to be reloaded. Go to chrome://extensions/ and reload.';
-            }
-
-            this.showStatus('Error: ' + errorMessage, 'error');
+            this.showStatus('Error: ' + this.getErrorMessage(error), 'error');
         } finally {
             this.captureBtn.disabled = false;
             this.captureBtn.textContent = 'Capture Screenshot';
+        }
+    }
+
+    isRestrictedUrl(url) {
+        if (!url) return true;
+
+        // Only block the most restrictive browser internal pages
+        const restrictedPrefixes = [
+            'chrome://',
+            'chrome-extension://',
+            'moz-extension://',
+            'edge://',
+            'about:',
+            'javascript:'
+        ];
+
+        // Allow file:// and data: URLs as they might be capturable
+        // Allow most web content including HTTPS, HTTP, local servers, etc.
+        return restrictedPrefixes.some(prefix => url.startsWith(prefix));
+    }
+
+    async ensureContentScriptLoaded(tabId) {
+        try {
+            // Test if content script is available
+            const testResponse = await chrome.tabs.sendMessage(tabId, { action: 'ping' });
+            if (testResponse && testResponse.success) {
+                return; // Content script is available
+            }
+        } catch (pingError) {
+            // Content script not loaded, try to inject
+        }
+
+        // Try to inject content script manually
+        try {
+            await chrome.scripting.executeScript({
+                target: { tabId: tabId },
+                files: ['content.js']
+            });
+
+            // Wait a bit for the script to initialize
+            await new Promise(resolve => setTimeout(resolve, 150));
+
+            // Test again
+            const testResponse = await chrome.tabs.sendMessage(tabId, { action: 'ping' });
+            if (!testResponse || !testResponse.success) {
+                throw new Error('Content script failed to initialize');
+            }
+
+        } catch (injectError) {
+            // This is expected on some pages, throw to trigger fallback
+            throw new Error('Content script injection failed');
+        }
+    }
+
+    async processScreenshotInPopup(dataUrl, settings) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                try {
+                    // Calculate dimensions with padding
+                    const padding = settings.padding;
+                    const canvasWidth = img.width + (padding * 2);
+                    const canvasHeight = img.height + (padding * 2);
+
+                    // Create canvas
+                    const canvas = document.createElement('canvas');
+                    canvas.width = canvasWidth;
+                    canvas.height = canvasHeight;
+                    const ctx = canvas.getContext('2d');
+
+                    // Apply background
+                    this.applyBackgroundToCanvas(ctx, canvasWidth, canvasHeight, settings);
+
+                    // Draw screenshot centered with padding
+                    ctx.drawImage(img, padding, padding, img.width, img.height);
+
+                    // Convert to blob and download
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            this.downloadImage(blob);
+                            resolve();
+                        } else {
+                            reject(new Error('Failed to create image blob'));
+                        }
+                    }, 'image/png', 1.0);
+
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            img.onerror = () => reject(new Error('Failed to load screenshot image'));
+            img.src = dataUrl;
+        });
+    }
+
+    downloadImage(blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+
+        a.href = url;
+        a.download = `screenshot-${timestamp}.png`;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        // Clean up
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    getErrorMessage(error) {
+        const message = error.message || error.toString();
+
+        // Provide more user-friendly error messages
+        if (message.includes('Cannot access') || message.includes('access denied')) {
+            return 'Cannot capture this page. Some pages like browser settings, extensions page, or certain secure sites cannot be captured for security reasons.';
+        } else if (message.includes('Cannot capture this page. This might be a browser internal page')) {
+            return 'Cannot capture this page. Browser internal pages and some secure sites restrict screenshot access.';
+        } else if (message.includes('No active tab')) {
+            return 'Please make sure you have an active tab open.';
+        } else if (message.includes('Could not establish connection')) {
+            return 'Unable to connect to the page. Try reloading the page and try again.';
+        } else if (message.includes('Extension context invalidated')) {
+            return 'Extension needs to be reloaded. Go to chrome://extensions/ and reload this extension.';
+        } else if (message.includes('Content script not available')) {
+            return 'Processing in fallback mode. Screenshot will still be captured.';
+        } else if (message.includes('Screenshot capture failed')) {
+            return message; // Use the detailed capture error message
+        } else {
+            return message;
         }
     }
 }

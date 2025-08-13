@@ -5,8 +5,6 @@ class ScreenshotProcessor {
 
     setupMessageListener() {
         chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-            console.log('Content script received message:', request);
-
             if (request.action === 'ping') {
                 sendResponse({ success: true, message: 'Content script is active' });
                 return;
@@ -16,7 +14,6 @@ class ScreenshotProcessor {
                 this.processScreenshot(request.dataUrl, request.settings)
                     .then(() => sendResponse({ success: true }))
                     .catch((error) => {
-                        console.error('Screenshot processing error:', error);
                         sendResponse({ success: false, error: error.message });
                     });
                 return true; // Keep message channel open for async response
@@ -73,7 +70,7 @@ class ScreenshotProcessor {
                 await this.applyGradientBackground(ctx, width, height, gradient);
                 break;
             case 'solid':
-                ctx.fillStyle = '#ffffff';
+                ctx.fillStyle = settings.solidColor || '#ffffff';
                 ctx.fillRect(0, 0, width, height);
                 break;
             case 'transparent':
@@ -185,6 +182,4 @@ class ScreenshotProcessor {
 }
 
 // Initialize when content script loads
-console.log('Screenshot content script loading...');
 new ScreenshotProcessor();
-console.log('Screenshot content script loaded successfully');
