@@ -9,8 +9,8 @@ class ScreenshotPopup {
 
     initElements() {
         this.backgroundType = document.getElementById('backgroundType');
-        this.gradientSelect = document.getElementById('gradientSelect');
         this.gradientGroup = document.getElementById('gradientGroup');
+        this.gradientPalette = document.getElementById('gradientPalette');
         this.paddingSlider = document.getElementById('paddingSlider');
         this.paddingValue = document.getElementById('paddingValue');
         this.preview = document.getElementById('preview');
@@ -20,11 +20,12 @@ class ScreenshotPopup {
         this.solidGroup = document.getElementById('solidGroup');
         this.colorPalette = document.getElementById('colorPalette');
 
-        // Initialize selected solid color
+        // Initialize selected colors
         this.selectedSolidColor = '#ffffff';
+        this.selectedGradient = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
 
         // Check if all elements are found
-        if (!this.backgroundType || !this.gradientSelect || !this.gradientGroup ||
+        if (!this.backgroundType || !this.gradientPalette || !this.gradientGroup ||
             !this.paddingSlider || !this.paddingValue || !this.preview ||
             !this.captureBtn || !this.status || !this.screenshotPreview ||
             !this.solidGroup || !this.colorPalette) {
@@ -41,10 +42,11 @@ class ScreenshotPopup {
             this.generatePreview(); // Live update
         });
 
-        this.gradientSelect.addEventListener('change', () => {
-            this.updatePreview();
-            this.saveSettings();
-            this.generatePreview(); // Live update
+        // Gradient palette event listeners
+        this.gradientPalette.addEventListener('click', (e) => {
+            if (e.target.classList.contains('gradient-option')) {
+                this.selectGradient(e.target);
+            }
         });
 
         this.paddingSlider.addEventListener('input', () => {
@@ -97,6 +99,24 @@ class ScreenshotPopup {
         this.generatePreview();
     }
 
+    selectGradient(gradientElement) {
+        // Remove previous selection
+        this.gradientPalette.querySelectorAll('.gradient-option').forEach(option => {
+            option.classList.remove('selected');
+        });
+
+        // Add selection to clicked gradient
+        gradientElement.classList.add('selected');
+
+        // Update selected gradient
+        this.selectedGradient = gradientElement.getAttribute('data-gradient');
+
+        // Update preview and save settings
+        this.updatePreview();
+        this.saveSettings();
+        this.generatePreview();
+    }
+
     updateColorSelection() {
         // Remove all selections
         this.colorPalette.querySelectorAll('.color-option').forEach(option => {
@@ -110,13 +130,28 @@ class ScreenshotPopup {
         }
     }
 
+    updateGradientSelection() {
+        if (!this.gradientPalette) return;
+
+        // Remove all selections
+        this.gradientPalette.querySelectorAll('.gradient-option').forEach(option => {
+            option.classList.remove('selected');
+        });
+
+        // Add selection to current gradient
+        const selectedOption = this.gradientPalette.querySelector(`[data-gradient="${this.selectedGradient}"]`);
+        if (selectedOption) {
+            selectedOption.classList.add('selected');
+        }
+    }
+
     updatePreview() {
         const backgroundType = this.backgroundType.value;
         let background;
 
         switch (backgroundType) {
             case 'gradient':
-                background = this.gradientSelect.value;
+                background = this.selectedGradient;
                 break;
             case 'solid':
                 background = this.selectedSolidColor;
@@ -125,7 +160,7 @@ class ScreenshotPopup {
                 background = 'transparent';
                 break;
             default:
-                background = this.gradientSelect.value;
+                background = this.selectedGradient;
         }
 
         this.preview.style.background = background;
@@ -145,7 +180,7 @@ class ScreenshotPopup {
     async saveSettings() {
         const settings = {
             backgroundType: this.backgroundType.value,
-            gradient: this.gradientSelect.value,
+            gradient: this.selectedGradient,
             solidColor: this.selectedSolidColor,
             padding: parseInt(this.paddingSlider.value)
         };
@@ -167,32 +202,35 @@ class ScreenshotPopup {
 
                 if (settings) {
                     this.backgroundType.value = settings.backgroundType || 'gradient';
-                    this.gradientSelect.value = settings.gradient || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    this.selectedGradient = settings.gradient || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
                     this.selectedSolidColor = settings.solidColor || '#ffffff';
                     this.paddingSlider.value = settings.padding || 50;
                     this.paddingValue.textContent = `${this.paddingSlider.value}px`;
 
-                    // Update color selection in palette
+                    // Update selections in palettes
                     this.updateColorSelection();
+                    this.updateGradientSelection();
                 }
             } else {
                 // Set default values if Chrome APIs not available
                 this.backgroundType.value = 'gradient';
-                this.gradientSelect.value = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                this.selectedGradient = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
                 this.paddingSlider.value = 50;
                 this.paddingValue.textContent = '50px';
             }
 
             this.toggleGradientGroup();
+            this.updateGradientSelection();
             this.updatePreview();
         } catch (error) {
             console.error('Error loading settings:', error);
             // Set default values on error
             this.backgroundType.value = 'gradient';
-            this.gradientSelect.value = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            this.selectedGradient = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
             this.paddingSlider.value = 50;
             this.paddingValue.textContent = '50px';
             this.toggleGradientGroup();
+            this.updateGradientSelection();
             this.updatePreview();
         }
     }
@@ -210,6 +248,8 @@ class ScreenshotPopup {
     async generateInitialPreview() {
         // Generate preview when extension first opens
         setTimeout(() => {
+            // Make sure gradient selection is properly initialized
+            this.updateGradientSelection();
             this.generatePreview();
         }, 500); // Small delay to let the popup fully load
     }
@@ -278,7 +318,7 @@ class ScreenshotPopup {
                     // Get current settings
                     const settings = {
                         backgroundType: this.backgroundType.value,
-                        gradient: this.gradientSelect.value,
+                        gradient: this.selectedGradient,
                         solidColor: this.selectedSolidColor,
                         padding: parseInt(this.paddingSlider.value)
                     };
@@ -435,7 +475,7 @@ class ScreenshotPopup {
             // Get current settings
             const settings = {
                 backgroundType: this.backgroundType.value,
-                gradient: this.gradientSelect.value,
+                gradient: this.selectedGradient,
                 solidColor: this.selectedSolidColor,
                 padding: parseInt(this.paddingSlider.value)
             };

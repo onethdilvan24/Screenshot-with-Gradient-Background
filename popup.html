@@ -9,7 +9,7 @@
         }
 
         body {
-            width: 340px;
+            width: 320px;
             padding: 0;
             margin: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
@@ -23,11 +23,12 @@
             backdrop-filter: blur(20px);
             border: 1px solid rgba(71, 85, 105, 0.3);
             border-radius: 16px;
-            padding: 24px;
-            margin: 16px;
+            padding: 20px;
+            margin: 12px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
             position: relative;
             overflow: hidden;
+            box-sizing: border-box;
         }
 
         .container::before {
@@ -273,24 +274,32 @@
         .color-palette {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
-            gap: 8px;
+            gap: 4px;
             margin-top: 12px;
-            padding: 8px;
+            padding: 10px;
             background: rgba(51, 65, 85, 0.3);
             border-radius: 12px;
             border: 1px solid rgba(71, 85, 105, 0.3);
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
         .color-option {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
             cursor: pointer;
             border: 2px solid transparent;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             justify-self: center;
+            align-self: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            min-width: 0;
+            min-height: 0;
         }
 
         .color-option:hover {
@@ -314,6 +323,46 @@
         .color-option[data-color="#f8f9fa"].selected,
         .color-option[data-color="#e9ecef"].selected {
             border-color: #8b5cf6;
+        }
+
+        /* Gradient palette styling */
+        .gradient-palette {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .gradient-option {
+            width: 100%;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            min-width: 0;
+        }
+
+        .gradient-option:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .gradient-option.selected {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
+            transform: scale(1.02);
         }
 
         /* Smooth fade-in animation */
@@ -351,6 +400,27 @@
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(139, 92, 246, 0.7);
         }
+
+        /* Buy me a coffee styling */
+        .coffee-link {
+            margin-top: 16px;
+            text-align: center;
+            padding-top: 12px;
+            border-top: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        .coffee-img {
+            height: 40px !important;
+            width: auto !important;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .coffee-link a:hover .coffee-img {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(255, 221, 87, 0.3);
+        }
     </style>
 </head>
 
@@ -368,17 +438,25 @@
         </div>
 
         <div class="control-group" id="gradientGroup">
-            <label for="gradientSelect">Gradient:</label>
-            <select id="gradientSelect">
-                <option value="linear-gradient(135deg, #667eea 0%, #764ba2 100%)">Blue to Purple</option>
-                <option value="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">Pink to Red</option>
-                <option value="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">Blue to Cyan</option>
-                <option value="linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)">Green to Blue</option>
-                <option value="linear-gradient(135deg, #fa709a 0%, #fee140 100%)">Pink to Yellow</option>
-                <option value="linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)">Mint to Pink</option>
-                <option value="linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)">Coral to Pink</option>
-                <option value="linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)">Purple to Pink</option>
-            </select>
+            <label>Gradient:</label>
+            <div class="gradient-palette" id="gradientPalette">
+                <div class="gradient-option selected" data-gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" title="Blue to Purple"></div>
+                <div class="gradient-option" data-gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+                    style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);" title="Pink to Red"></div>
+                <div class="gradient-option" data-gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+                    style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);" title="Blue to Cyan"></div>
+                <div class="gradient-option" data-gradient="linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)"
+                    style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);" title="Green to Blue"></div>
+                <div class="gradient-option" data-gradient="linear-gradient(135deg, #fa709a 0%, #fee140 100%)"
+                    style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);" title="Pink to Yellow"></div>
+                <div class="gradient-option" data-gradient="linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)"
+                    style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);" title="Mint to Pink"></div>
+                <div class="gradient-option" data-gradient="linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)"
+                    style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);" title="Coral to Pink"></div>
+                <div class="gradient-option" data-gradient="linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)"
+                    style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);" title="Purple to Pink"></div>
+            </div>
         </div>
 
         <div class="control-group hidden" id="solidGroup">
@@ -424,6 +502,14 @@
         </div>
 
         <div class="status hidden" id="status"></div>
+
+        <!-- Buy me a coffee link -->
+        <div class="coffee-link">
+            <a href="https://www.buymeacoffee.com/onethdikkumbura" target="_blank">
+                <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee"
+                    class="coffee-img">
+            </a>
+        </div>
     </div>
 
     <script src="popup.js"></script>
